@@ -1,0 +1,31 @@
+$black: #000000;
+$white: #FFFFFA;
+$yellow: #FFD166;
+$altYellow: #F6AE2D;
+$blue:  #016fb9;
+$green: #495F41;
+$background: #EFF1F3;
+$onyx:  #393D3F;
+$paynesGray: #546A7B;
+$tomato: #FC5130;
+$bone: #ECE2D0;
+$cosmicLatte: #F8F4E3;
+$ashGray: #B4B8AB;
+$frenchGray:  #CED3DC;
+
+:export {
+   frenchGray: $frenchGray;
+   ashGray: $ashGray;
+   cosmicLatte: $cosmicLatte;
+   tomato: $tomato;
+   bone: $bone;
+   onyx: $onyx;
+   paynesGray: $paynesGray;
+   background: $background;
+   black: $black; 
+   white: $white;
+   yellow: $yellow;
+   altYellow: $altYellow;
+   blue: $blue;
+   green: $green;
+}

@@ -1,0 +1,55 @@
+$black: #000000;
+$white: #FFFFFA;
+$yellow: #FFD166;
+$taxi: #F6AE2D; //comedy
+$moonstone: #4DA1A9; //sci-fi
+$darkpurple: #780116; //drama
+$rosepompadour: #E87EA1; //romance
+$cinnabar: #F2542D; //horror
+$gunmetal: #2A2D34; //crime
+$blue:  #016fb9;
+$green: #495F41;
+$background: #FBFBFF; //ghostwhite keep!
+$onyx:  #393D3F;
+$paynesGray: #546A7B;
+$tomato: #FC5130;
+$bone: #ECE2D0;
+$cosmicLatte: #F8F4E3;
+$ashGray: #B4B8AB;
+$frenchGray: #CED3DC;
+$glaucous: #6E82A7;
+$spacecadet: #2B2D42;
+$seasalt: #F8F7F9;
+$hookersgreen: #52796F;
+$darkslategray: #354F52;
+$charcoal: #2F3E46;
+$cornsilk: #FFFAE3;
+$chillired: #E3170A;
+$uclablue:  #2374AB; //secondary contender
+$olivine: #8BB174;  //primary contender
+$cambridgeblue: #79B791; //primary contender
+$richblack: #031926; //i like for dark theme maybe
+$oxfordblue: #102542; //appbar && table header secondary
+
+:export {
+    scifi: $moonstone;
+    crime: $gunmetal;
+    drama: $darkpurple;
+    comedy: $taxi;
+    taxi: $taxi;
+    primaryMain: $cambridgeblue;
+    secondaryMain: $oxfordblue;
+    frenchGray: $frenchGray;
+    ashGray: $ashGray;
+    cosmicLatte: $cosmicLatte;
+    tomato: $tomato;
+    bone: $bone;
+    onyx: $onyx;
+    paynesGray: $paynesGray;
+    background: $background;
+    black: $black; 
+    white: $white;
+    yellow: $yellow;
+    blue: $blue;
+    green: $green;
+}
