@@ -41,6 +41,7 @@ export default function Project({ params }) {
     const [bottomValue, setBottomValue] = useState(0);
     const [title, setTitle] = useState("")
     const [act, setAct] = useState<number>(0)
+    const [activeVersion, setActiveVersion] = useState(1)
 
     const handleBottomChange = (event: React.SyntheticEvent, newValue: number) => {
         event.stopPropagation()
@@ -150,7 +151,7 @@ export default function Project({ params }) {
         //const scenesArray: any = scenes
         const newScene = {
             number: scenes.length + 1,
-            versions: {
+            versions: [{
                 act,
                 antithesis: "",
                 step: "",
@@ -158,7 +159,7 @@ export default function Project({ params }) {
                 synthesis: "",
                 thesis: "",
                 version: ""
-            }
+            }]
             
         }
         //scenesArray.push(newScene)
@@ -255,7 +256,8 @@ export default function Project({ params }) {
                                 {
                                     scenes.length > 0 
                                         ? scenes.map((scene: any) => {
-                                            return <SceneCard/>
+                                            console.log('scene: ', scene)
+                                            return <SceneCard number={scene.number} versions={scene.versions}/>
                                         })
                                         : <Button variant='contained'>Add Scene</Button>
                                     
