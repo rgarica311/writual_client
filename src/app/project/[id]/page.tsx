@@ -1,40 +1,16 @@
 'use client';
 
-import { Accordion, AccordionDetails, AccordionSummary, Box, Breadcrumbs, Checkbox, Container, Divider, IconButton, Link, MenuItem, MenuList, Paper, Tab, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TableSortLabel, Tabs, TextField, Typography } from '@mui/material'
+import { Accordion, AccordionDetails, AccordionSummary, Box, Breadcrumbs, Button, Checkbox, Container, Divider, IconButton, Link, MenuItem, MenuList, Paper, Tab, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TableSortLabel, Tabs, TextField, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { request, gql } from "graphql-request";
 import { useQuery } from "@tanstack/react-query";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import  { CharacterCard } from '../../../components/CharacterCard'
 import { SceneCard } from '@/components/SceneCard';
-
+import { projectStyles } from 'styles';
+import { TabPanelProps } from 'interfaces';
 const endpoint = `http://localhost:4000`
 
-const searchStyle = {
-    height: "56px",
-    width: "400px"
-}
-
-const tableTopStyle = {
-    backgroundColor: "white",
-    maxWidth: "100%",
-    height: "88px",
-    borderTopRightRadius: 5,
-    borderTopLeftRadius: 5,
-    padding: 2
-}
-
-const iconContainer = {
-    height: "40px",
-    width: "40px",
-    padding: "8px"
-}
-
-interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-  }
 
 const CustomTabPanel = (props: TabPanelProps) => {
     const { children, value, index, ...other } = props;
@@ -48,7 +24,7 @@ const CustomTabPanel = (props: TabPanelProps) => {
         {...other}
       >
         {value === index && (
-          <Box sx={{ p: 0 }}>
+          <Box sx={{ p: 0, height: "100%" }}>
             {children}
           </Box>
         )}
@@ -60,14 +36,20 @@ export default function Project({ params }) {
     const [expandedTop, setExpandedTop] = useState(true)
     const [expandedBottom, setExpandedBottom] = useState(true)
     const [characters, setCharacters] = useState([])
-    const [scenes, setScenes] = useState([])
+    const [scenes, setScenes] = useState<Array<any>>([])
     const [value, setValue] = useState(0);
     const [bottomValue, setBottomValue] = useState(0);
     const [title, setTitle] = useState("")
+    const [act, setAct] = useState<number>(0)
 
     const handleBottomChange = (event: React.SyntheticEvent, newValue: number) => {
         event.stopPropagation()
         setBottomValue(newValue);
+    };
+
+    const handleActChange = (event: React.SyntheticEvent, newValue: number) => {
+        event.stopPropagation()
+        setAct(newValue);
     };
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -125,8 +107,7 @@ export default function Project({ params }) {
         
     }
     
-    const { data, isLoading, error }: any = useQuery({queryKey: ['proojects'], queryFn: async () => request(endpoint, PROJECT_QUERY, variables)});
-
+    const { data, isLoading, error }: any = useQuery({queryKey: ['projects'], queryFn: async () => request(endpoint, PROJECT_QUERY, variables)});
 
     useEffect(() => {
         console.log('data isLoading: ', isLoading)
@@ -155,30 +136,49 @@ export default function Project({ params }) {
           id: `simple-tab-${index}`,
           'aria-controls': `simple-tabpanel-${index}`,
         };
-      }
-
-    const tableTopButtons = {
-        display: "flex",
-        flexDirection: "row",
-        height: "56px",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: 1,
-        margin:   0
-        //backgroundColor: theme.palette.background.paper
     }
 
-    const sceneContainer = {
-        margin:  0,
-        minWidth: "100%",
-        display: "flex",
-        justifyContent: "space-evenly",
-        flexWrap:  "wrap"
+    const actTabProps = (index: number) => {
+        return {
+            id: `simple-tab=${index}`,
+            'aria-controls': `simple-tabpanel-${index}`
+        }
+    }
+
+    const handleAddScene = (act: number) => {
+        console.log(`handleAddScene ran act ${act} scenes: `, scenes)
+        //const scenesArray: any = scenes
+        const newScene = {
+            number: scenes.length + 1,
+            versions: {
+                act,
+                antithesis: "",
+                step: "",
+                summary: "",
+                synthesis: "",
+                thesis: "",
+                version: ""
+            }
+            
+        }
+        //scenesArray.push(newScene)
+        //console.log('handleAddScene currentScenes: ', newScene)
+        //console.log('handleAddScene scenesArray.: ', scenesArray)
+
+        setScenes([...scenes, newScene])
+    }
+
+    useEffect(() => {
+        console.log('scenes updated: ', scenes)
+}   , [scenes])
+
+    const handleAddCharacter = () => {
+
     }
 
     return (
         <>
-            <Container  disableGutters sx={tableTopButtons}>
+            <Container  disableGutters sx={projectStyles.tableTopButtons}>
                 <Breadcrumbs aria-label="breadcrumb">
                     <Link underline="hover" color="inherit" href="/projects">
                         <Typography sx={{width: "100%"}}  variant="h6"> Projects</Typography>
@@ -211,7 +211,7 @@ export default function Project({ params }) {
                                 ? characters.map((character: any, index: number) => { 
                                     return  <CharacterCard id={index} key={character.name} details={character.details} name={character.name} />
                                 })
-                                : <Typography>No Characters</Typography>
+                                : <Button onClick={handleAddCharacter} variant='contained'>Add Character</Button>
 
                         }
                     </Container>
@@ -243,16 +243,48 @@ export default function Project({ params }) {
                     <CustomTabPanel value={bottomValue} index={0}>
                         <Container disableGutters sx={{margin: 0, padding: 1}}>Treatment</Container>
                     </CustomTabPanel>
+                    
                     <CustomTabPanel value={bottomValue} index={1}>
-                        <Container disableGutters sx={sceneContainer}>
-                            <SceneCard/>
-                            <SceneCard/>
-                            <SceneCard/>
-                            <SceneCard/>
-                            <SceneCard/>
-                            <SceneCard/>
-                        </Container>
+                        <Tabs value={act} onChange={handleActChange} aria-labl="act tabs">
+                            <Tab label="Act 1" {...actTabProps(0)}/>
+                            <Tab label="Act 2" {...actTabProps(1)}/>
+                            <Tab label="Act 3" {...actTabProps(2)}/>
+                        </Tabs>
+                        <CustomTabPanel value={act} index={0}>
+                            <Container disableGutters sx={projectStyles.sceneContainer}>
+                                {
+                                    scenes.length > 0 
+                                        ? scenes.map((scene: any) => {
+                                            return <SceneCard/>
+                                        })
+                                        : <Button variant='contained'>Add Scene</Button>
+                                    
+                                }
+                            </Container>
+                            <Button onClick={() => handleAddScene(1)} sx={{marginLeft: "91%", width: "150px", height: "36px"}} variant='contained'>Add Scene</Button>
+                        </CustomTabPanel>
+
+                        <CustomTabPanel value={act} index={1}>
+                            <Container disableGutters sx={projectStyles.sceneContainer}>
+                              <Button onClick={() => handleAddScene(2)} variant='contained'>Add Scene</Button>
+                            </Container>
+                        </CustomTabPanel>
+
+                        <CustomTabPanel value={act} index={2}>
+                            <Container disableGutters sx={projectStyles.sceneContainer}>
+                                {
+                                    scenes.length > 0 
+                                        ? scenes.map((scene: any) => {
+                                            return <SceneCard/>
+                                        })
+                                        : <Button variant='contained'>Add Scene</Button>
+                                    
+                                }
+                            </Container>
+                        </CustomTabPanel>
+                        
                     </CustomTabPanel>
+
                     <CustomTabPanel value={bottomValue} index={2}>
                         <Container disableGutters>Screenplay</Container>
                     </CustomTabPanel>

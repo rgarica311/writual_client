@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useCallback, useEffect, useReducer, useState } from "react";
 import  { updateProject } from "../../reducers"
 import { TableBody, TableRow, TableCell, Container, TextField, FormControl, InputLabel, Select, SelectChangeEvent, MenuItem, Box, Button, IconButton, Popover, Tooltip, Typography } from "@mui/material"
@@ -190,6 +192,7 @@ export const CustomTableBody: React.FC<TableBodyProps> = (props: TableBodyProps)
     }
 
     return (
+        
     <TableBody  sx={{overflowY: "scroll", minWidth: "1760px"}}>
     {
         visibleRows?.map((row: any, index: number) => {

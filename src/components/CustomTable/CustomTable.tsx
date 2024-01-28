@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useReducer, useState } from 'react';
+'use client';
+
+import React, { useReducer, useState } from 'react';
 import {
     Button,
     TableContainer,
@@ -7,113 +9,20 @@ import {
     TablePagination,
     Paper,
     Container,
-    IconButton, Typography, FormGroup, FormControlLabel, Switch, FormLabel, Box, Chip, FormControl, InputLabel, OutlinedInput, Select, SelectChangeEvent, Autocomplete, Modal, Popover, Tooltip
+    IconButton, Typography
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useRouter } from 'next/navigation'
-
-import { request, gql, GraphQLClient } from "graphql-request";
+import { gql, GraphQLClient } from "graphql-request";
 import { CustomTableHead, CustomTableBody } from './';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { identifierToKeywordKind } from 'typescript';
-
-interface CustomTableProps {
-    label: string
-    columnState: any
-    columnStateUpdate: Function
-    handleHideAll: Function
-    handleShowAll: Function
-    handleReset: Function
-    defaultSortColumn: string
-    setAddProject: Function
-    headerCells?: any
-    rows?: any
-    mappedData?: any
-    outgoingTransmission?: Boolean
-    incomingResponse?: Boolean
-    headerButtonHandler?: Function
-    headerButtonText?: string
-    headerButtonIcon?: any
-    headerButtonAriaLabel?: string
-    handleTableItemSelect?: Function
-    children?: any
-}
-
-const buttonStyle = { 
-    paddingLeft: "8px", 
-    paddingTop: "11px", 
-    paddingRight: "8px", 
-    paddingBottom: "11px",
-    minWidth: "189px", 
-    height: "42px" 
-}
-
-const searchStyle = {
-    height: "56px",
-    width: "400px"
-}
-
-const tableTopStyle = {
-    backgroundColor: "white",
-    display: "flex",
-    flexDirection: "row",
-    maxWidth: "100%",
-    height: "88px",
-    borderTopRightRadius: 5,
-    borderTopLeftRadius: 5,
-    padding: 2
-}
-
-const iconContainer = {
-    height: "40px",
-    width: "40px",
-    padding: "8px"
-}
-
-const tableTopButtons = {
-    display: "flex",
-    flexDirection: "row",
-    height: "100%",
-    justifyContent: "flex-end",
-    alignItems: "center"
-}
-
-const printButtonStyle = {
-    width: "80%",
-    height: "80%"
-}
+import { TableProps, Data } from 'interfaces';
+import { tableBodyStyle } from 'styles';
+import InboxIcon from '@mui/icons-material/Inbox';
+import { Inbox } from '@mui/icons-material';
 
 type Order = 'asc' | 'desc';
-
-interface Data {
-    calories: number;
-    carbs: number;
-    fat: number;
-    name: string;
-    protein: number;
-}
-
-const ManageColumns: React.FC<any> = ({headerCells}) => {
-    return (
-        <Paper sx={{position: "relative", bottom: "538px", left: "1292px", gap: "3px", maxWidth: "242px", maxHeight:"440px", paddingTop: 0, paddingRight: 2, paddingBottom: 0, paddingLeft: 2}}>
-            <FormGroup>
-                {
-                   headerCells.map((cell: any) => {
-                    return (
-                        <FormControlLabel control={<Switch defaultChecked/>} label={cell.label}/>
-                    )
-                   })
-                }
-            </FormGroup>
-            <Container disableGutters sx={{display: "flex", justifyContent: "space-evenly"}}>
-                <Button>HIDE ALL</Button>
-                <Button>SHOW ALL</Button>
-            </Container>
-        </Paper>
-    )
-}
-
 
 const projectReducer = (state, action) => {
     if(action.type === "UPDATE_TITLE")  {
@@ -126,7 +35,7 @@ const projectReducer = (state, action) => {
 
 const endpoint = `http://localhost:4000`
 
-export const CustomTable: React.FC<CustomTableProps> = ({ 
+export const CustomTable: React.FC<TableProps> = ({ 
     label, 
     headerCells, 
     rows, 
@@ -210,16 +119,6 @@ const graphQLClient = new GraphQLClient(endpoint, {
         marginBottom: "2px"
     }
 
-    const searchOperators: any = [
-        "Contains", 
-        "Equals", 
-        "Starts with", 
-        "Ends with", 
-        "Is Empty", 
-        "Is any of", 
-        "And / Or"
-    ]
-
     const descendingComparator = (a: any, b: any, orderBy: any) => {
         if (b[orderBy] < a[orderBy]) {
           return -1;
@@ -261,31 +160,6 @@ const graphQLClient = new GraphQLClient(endpoint, {
     );
 
     //console.log('edit visible rows: ', visibleRows)
-
-    
-    const tableHeadCellStyle = {
-        padding: 2,
-        maxHeight: "56px",
-        width: "223px",
-        backgroundColor: `${theme.palette.secondary.main}`,
-        color: `${theme.palette.secondary.contrastText}`
-        //flex: 1, 
-    }
-
-
-    const sortOptionsIconsStyle = {
-        width: "40px",
-        height: "24px",
-        paddingRight: "16px"
-    }
-
-    const containerStyle = { borderRadius: "10px", minHeight:"calc(100vh - 200px)", boxShadow: "none", gap: 2}
-    
-    const tableHeadStyle = { 
-        paddingLeft: 1, 
-        //backgroundColor: 'white', 
-        height: "56px" 
-    }
 
     const handleChangePage = (event: unknown, newPage: number) => {
         console.log('debug currentPage handlePage change setting newPage to: ', newPage)
@@ -330,6 +204,7 @@ const graphQLClient = new GraphQLClient(endpoint, {
         }
       }
     const handleRecordClick  = (e: any, id: string) => {
+        console.log(`handleRecordClick e: ${e} id: ${id}`)
         e.preventDefault()
         e.stopPropagation()
         router.push(`/project/${id}`)
@@ -393,7 +268,7 @@ const graphQLClient = new GraphQLClient(endpoint, {
                 <Button onClick={() => setAddProject(true)} 
                             color="primary" 
                             variant='text' 
-                            sx={buttonStyle} 
+                            sx={tableBodyStyle.buttonStyle} 
                             startIcon={<AddCircleOutlineIcon />}>
                             Create Project
                         </Button>
@@ -401,7 +276,7 @@ const graphQLClient = new GraphQLClient(endpoint, {
                 
                 <Container disableGutters maxWidth={false}  sx={{width: "max-content", margin: 0}}>
                    
-                    <IconButton sx={iconContainer}>
+                    <IconButton sx={tableBodyStyle.iconContainer}>
                         <SettingsIcon aria-label="Settings" />
                     </IconButton>
                 </Container>
@@ -409,7 +284,7 @@ const graphQLClient = new GraphQLClient(endpoint, {
 
             </Container>
         
-            <TableContainer sx={containerStyle} component={Paper}>
+            <TableContainer sx={tableBodyStyle.containerStyle} component={Paper}>
                 <Table sx={{tableLayout:  "fixed"}} stickyHeader aria-label={label}>
                     <CustomTableHead
                         hoverLabel={hoverLabel}
@@ -435,24 +310,39 @@ const graphQLClient = new GraphQLClient(endpoint, {
                         onRequestSort={handleRequestSort}
                         rowCount={visibleRows?.length} />
 
-                    <CustomTableBody
-                        visibleRows={visibleRows}
-                        headerCells={headerCells}
-                        edit={edit}
-                        currentProject={currentProject}
-                        project={project}
-                        isSelected={isSelected}
-                        handleUpdateProject={handleUpdateProject}
-                        handleRecordClick={handleRecordClick}
-                        setCurrentProject={setCurrentProject}
-                        //handleEditProject={handleEditProject}
-                        
+                    {
+                        <CustomTableBody
+                                visibleRows={visibleRows}
+                                headerCells={headerCells}
+                                edit={edit}
+                                currentProject={currentProject}
+                                project={project}
+                                isSelected={isSelected}
+                                handleUpdateProject={handleUpdateProject}
+                                handleRecordClick={handleRecordClick}
+                                setCurrentProject={setCurrentProject}
+                                //handleEditProject={handleEditProject}
+                                
+        
+                            />
+                           
+                    }
+                    
 
-                    />
+                    
                         
 
                     
                     </Table>
+                    {
+                        visibleRows.length < 1 && (
+                            <Container disableGutters sx={tableBodyStyle.emptyTableContainer} >
+                                <InboxIcon sx={{fontSize: "64px"}}/>
+                                <Typography sx={{fontSize: "30px"}}>No Data</Typography>
+                            </Container>
+                        )
+                        
+                    }
             </TableContainer>
                     <TableFooter sx={{backgroundColor:"white", display: "flex", justifyContent: "flex-end"}}>
                             <TablePagination

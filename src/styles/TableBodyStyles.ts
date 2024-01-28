@@ -36,5 +36,33 @@ export const tableBodyStyle = {
         whiteSace: "nowrap",
         textOverflow: "ellipsis",
         cursor: "pointer"
+    },
+    buttonStyle: { 
+        paddingLeft: "8px", 
+        paddingTop: "11px", 
+        paddingRight: "8px", 
+        paddingBottom: "11px",
+        minWidth: "189px", 
+        height: "42px" 
+    },
+    iconContainer: {
+        height: "40px",
+        width: "40px",
+        padding: "8px"
+    },
+    containerStyle: { 
+        borderRadius: "10px", 
+        minHeight:"calc(100vh - 200px)", 
+        boxShadow: "none", 
+        gap: 2
+    },
+    emptyTableContainer: {
+        minWidth: "100%", 
+        minHeight:"calc(100vh - 400px)", 
+        display: "flex", 
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
     }
+
 }

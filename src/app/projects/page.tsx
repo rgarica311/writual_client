@@ -14,7 +14,7 @@ import { CellWifiSharp, DisplaySettings, TroubleshootRounded } from '@mui/icons-
 import { CustomTable, CreateProject } from "../../components"
 import { columnStateReducer } from "../../reducers"
 import { headerCells } from "../../interfaces"
-import { create } from 'domain';
+import { useUserStore } from '@/state/userGeneration';
 
 const endpoint = `http://localhost:4000`
 
@@ -27,6 +27,19 @@ const PROJECTS_QUERY = gql`
     type
     logline
     user
+    scenes {
+      number
+      project_id
+      versions {
+        act
+        antithesis
+        synthesis
+        thesis
+        version
+        summary
+        step
+      }
+    }
     outline {
       format {
         name
@@ -38,10 +51,12 @@ const PROJECTS_QUERY = gql`
 
 export default function DataTable() {
   const queryClient = useQueryClient()
+  const setProjects = useUserStore((state) => state.setProjects)
+  const projects = useUserStore((state) => state.projects)
 
   const { theme, setTheme, appliedTheme } = getTheme()
   const [open, setOpen] = useState(false);
-  const [rows, setRows] = useState([])
+  //const [rows, setRows] = useState([])
   const [addProject, setAddProject]  = useState(false)
   const [ createStatement, setCreateStatement ] = useState<any>()
   const [ createVariables, setCreateVariables ] = useState<any>()
@@ -80,17 +95,17 @@ export default function DataTable() {
 
   useEffect(() => {
     console.log('create proejct data updated: ', data)
-    data?.getProjectData.length > 0 && setRows(data?.getProjectData)
+    data?.getProjectData.length > 0 && setProjects(data?.getProjectData)
   }, [data])
 
   useEffect(() => {
-    console.log('create proejct rows updated: ', rows)
-    rows.forEach((row: any) =>  {
+    console.log('create project rows updated: ', projects)
+    projects.forEach((row: any) =>  {
       row.characters = true
-      row.scenes =  true
+      //row.scenes =  true
       row.treatment = true
     })
-  }, [rows])
+  }, [projects])
 
   console.log('Projects: ', data?.getProjectData)
 
@@ -163,7 +178,7 @@ export default function DataTable() {
   return (
       <>
       {
-        rows.length > 0 && (
+        
           <CustomTable 
             setAddProject={setAddProject}
             handleHideAll={handleHideAll}
@@ -175,13 +190,10 @@ export default function DataTable() {
             //fetchHook={useBatchPrint}
             label="Projects" 
             headerCells={headerCells}
-            rows={rows}
+            rows={projects}
             headerButtonText="Share"
             headerButtonAriaLabel="share-project(s)"
           />
-            
-        )
-
         
       } 
       {

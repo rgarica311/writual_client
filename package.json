@@ -1,6 +1,6 @@
 {
   "name": "writual",
-  "packageManager": "yarn@3.5.1",
+  "packageManager": "yarn@4.0.2",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -19,6 +19,7 @@
     "@emotion/react": "latest",
     "@emotion/styled": "latest",
     "@fontsource/lato": "^5.0.17",
+    "@fortawesome/fontawesome-free": "^6.5.1",
     "@mui/icons-material": "^5.14.11",
     "@mui/material": "latest",
     "@mui/styles": "^5.14.11",
@@ -38,6 +39,7 @@
     "react-router-dom": "^6.18.0",
     "styled-jsx": "^5.1.2",
     "typescript": "5.0.4",
-    "use-debounce": "^10.0.0"
+    "use-debounce": "^10.0.0",
+    "zustand": "^4.5.0"
   }
 }
