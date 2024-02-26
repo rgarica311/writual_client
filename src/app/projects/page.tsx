@@ -1,66 +1,30 @@
 'use client';
 
-import React, { useMemo, useReducer, useState, useEffect } from 'react';
-import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
-import { roboto, openSans, montserrat } from "../../utils/fonts";
-import { colors } from '../../utils/colors';
-import { Theme, styled, withTheme } from '@mui/material/styles';
-import { Button, TableContainer, Table, TableBody, TableRow, TableCell, TableHead, Collapse, Paper } from '@mui/material';
-import { ThemeProvider} from "@mui/material/styles";
-import { getTheme } from '../../themes/themes'
-import { request, gql } from "graphql-request";
-import { useMutation, useQuery, useQueryClient }  from "@tanstack/react-query";
-import { CellWifiSharp, DisplaySettings, TroubleshootRounded } from '@mui/icons-material';
+import React, { useState, useEffect } from 'react';
+import { request } from "graphql-request";
+import { useQuery, useQueryClient }  from "@tanstack/react-query";
 import { CustomTable, CreateProject } from "../../components"
-import { columnStateReducer } from "../../reducers"
 import { headerCells } from "../../interfaces"
 import { useUserStore } from '@/state/userGeneration';
+import { PROJECTS_QUERY, CREATE_PROJECT } from '@/queries/ProjectQueries';
+import { createMutation } from '@/helpers/createMutation';
+import { useCreateMutation } from 'hooks';
+import { GqlStatements } from "@/enums/GqlStatements"
+import { useProjectTableState } from '@/state/userGeneration';
+import { Mutation } from "@/interfaces/scene"
+import { sceneStore } from '@/state/sceneState';
 
 const endpoint = `http://localhost:4000`
 
-const PROJECTS_QUERY = gql`
-{
-  getProjectData(input: {user: "rory.garcia1@gmail.com"}) {
-    id
-    title
-    genre
-    type
-    logline
-    user
-    scenes {
-      number
-      project_id
-      versions {
-        act
-        antithesis
-        synthesis
-        thesis
-        version
-        summary
-        step
-      }
-    }
-    outline {
-      format {
-        name
-      }
-    }
-  }
-}
-`;
-
 export default function DataTable() {
   const queryClient = useQueryClient()
+  const createStatement = useProjectTableState((state) => state.createStatement)
+  const setCreateStatement = useProjectTableState((state) => state.setCreateStatement)
   const setProjects = useUserStore((state) => state.setProjects)
   const projects = useUserStore((state) => state.projects)
-
-  const { theme, setTheme, appliedTheme } = getTheme()
-  const [open, setOpen] = useState(false);
-  //const [rows, setRows] = useState([])
   const [addProject, setAddProject]  = useState(false)
-  const [ createStatement, setCreateStatement ] = useState<any>()
   const [ createVariables, setCreateVariables ] = useState<any>()
-
+  const setActiveVersion = sceneStore((state) => state.setActiveVersion)
   const columnStatus = React.useMemo(() => ({
     title: true,
     logline: true,
@@ -87,14 +51,10 @@ export default function DataTable() {
     
   }), [])
   
-  const [columnState, dispatch] = React.useReducer(columnStateReducer, {columnVisibility:  {...columnStatus},  filterStatus: {...filters} });
-
-  //return request(endpoint, PROJECTS_QUERY);
-
   const { data, isLoading, error }: any = useQuery({ queryKey: ['projects'], queryFn: async () =>  request(endpoint, PROJECTS_QUERY)})
 
   useEffect(() => {
-    console.log('create proejct data updated: ', data)
+    console.log('debug scene projects data updated: ', data)
     data?.getProjectData.length > 0 && setProjects(data?.getProjectData)
   }, [data])
 
@@ -109,69 +69,23 @@ export default function DataTable() {
 
   console.log('Projects: ', data?.getProjectData)
 
-  const handleHideAll =  ()  => {
-    console.log('column state hide all running')
-    dispatch({type: "HIDE_ALL"})
-  }
-
-  const handleShowAll =  ()  => {
-    console.log('column state show all running')
-    dispatch({type: "SHOW_ALL"})
-  }
-
-  const handleReset =  ()  => {
-    dispatch({type: "RESET"})
-  }
-
-  const handleColumnUpdate = (dataIndex: string) => {
-    console.log('columnState handleColumnUpdate running for: ', dataIndex)
-    const statusFilters = Object.keys(filters)
-
-    if(statusFilters.includes(dataIndex))  {
-      console.log('columnState status filter: ', dataIndex)
-      dispatch({type: "STATUS_FILTER", filter: dataIndex})
-    } else {
-      dispatch({type: "TOGGLE_COLUMN", dataIndex})
+  const addProjectMutationArgs: Mutation = {
+    createStatement,
+    createVariables,
+    invalidateQueriesArray: ['projects'],
+    stateResetters: {
+      setCreateStatement
     }
-    
   }
 
-  const mutation = useMutation({
-    mutationFn: async () => {
-      console.log('create proejct useMutation variables: ', createVariables)
-      await request(endpoint, createStatement,  createVariables)
-    },
-    onSuccess: () =>  {
-        console.log('create proejct Update Success')
-        queryClient.invalidateQueries({ queryKey: ['projects']})
-    },
-    onError: (error: any) => {
-        console.log('create proejct mutation  error', JSON.stringify(error,  null, 2))
-    },
-    onMutate: () => {
-        console.log('create proejct useMutation mutating  variables: ', createVariables)
+  const mutation = createMutation(addProjectMutationArgs)
 
-    }
-  })
-
-  useEffect(()  => {
-    if(createVariables?.title && createStatement) mutation.mutate()
-  }, [createStatement, createVariables])
+  useCreateMutation(createStatement, createVariables, mutation, GqlStatements.CREATE_PROJECT)
 
   const handleAddProject = (formValues: any) => {
     console.log('create project handleAddProject formValues: ', formValues)
     formValues.user = "rory.garcia1@gmail.com"
     setCreateVariables(formValues)
-
-    const CREATE_PROJECT = gql`
-      mutation CreateProject($title: String!, $type: ProjectType!, $user: String!, $logline: String, $genre: String, $outline: OutlineInput) {
-        createProject(input: {title: $title, type: $type, user: $user, logline: $logline, genre: $genre, outline: $outline}) {
-          id,
-          title
-        }
-      }
-    `
-
     setCreateStatement(CREATE_PROJECT)
   }
 
@@ -179,21 +93,15 @@ export default function DataTable() {
       <>
       {
         
-          <CustomTable 
-            setAddProject={setAddProject}
-            handleHideAll={handleHideAll}
-            handleShowAll={handleShowAll}
-            handleReset={handleReset}
-            columnState={columnState}
-            columnStateUpdate={handleColumnUpdate}
-            defaultSortColumn="title"
-            //fetchHook={useBatchPrint}
-            label="Projects" 
-            headerCells={headerCells}
-            rows={projects}
-            headerButtonText="Share"
-            headerButtonAriaLabel="share-project(s)"
-          />
+        <CustomTable 
+          setAddProject={setAddProject}
+          defaultSortColumn="title"
+          label="Projects" 
+          headerCells={headerCells}
+          rows={projects}
+          headerButtonText="Share"
+          headerButtonAriaLabel="share-project(s)"
+        />
         
       } 
       {

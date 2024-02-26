@@ -2,11 +2,9 @@
 import { Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, TextField, useTheme } from "@mui/material";
 import React, { useCallback, useEffect, useState } from "react";
 import { useUserStore } from '@/state/userGeneration';
+import { ProjectType } from '@/enums/ProjectEnums'
+import { CreateProjectProps } from "@/interfaces/project";
 
-interface CreateProjectProps {
-    setAddProject: Function
-    handleAddProject: Function
-}
 
 const InputWrapper: React.FC<any> = ({ children }) => {
     return (
@@ -20,10 +18,6 @@ export const CreateProject: React.FC<CreateProjectProps> = ({setAddProject, hand
   const outlines = useUserStore((state) => state.outlines)
   const theme = useTheme();
   const [formValues, setFormValues] = useState<any>({})
-
-  enum ProjectType {
-    Feature = "Feature"
-  }
 
   useEffect(() => {
     console.log('create project formValues: ', formValues)
@@ -80,8 +74,8 @@ export const CreateProject: React.FC<CreateProjectProps> = ({setAddProject, hand
                   <InputLabel sx={{color: theme.palette.text.primary}}>Project Type</InputLabel>
                   <Select required variant="standard" onChange={(e: any) => updateForm(e, "type")} sx={{flexGrow: 1, height: "56px"}} label="Type">
                     <MenuItem value={ProjectType.Feature}>Feature Film</MenuItem>
-                    <MenuItem value={"Television"}>Television</MenuItem>
-                    <MenuItem value={"Short"}>Short Film</MenuItem>
+                    <MenuItem value={ProjectType.Television}>Television</MenuItem>
+                    <MenuItem value={ProjectType.Short}>Short Film</MenuItem>
                     
                   </Select>
               </FormControl>

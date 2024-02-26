@@ -44,7 +44,8 @@ export const light = {
         contrastText: colors.white
       },
       secondary: {
-        main: colors.secondaryMain
+        main: colors.secondaryMain,
+        contrastText: colors.white
       },
     },
     components: {
@@ -57,6 +58,18 @@ export const light = {
             backgroundColor: colors.secondaryMain,
           },
         },
+      },
+      MuiTabs: {
+        styleOverrides: {
+          flexContainerVertical: {
+          "&.MuiTabs-flexContainerVertical": {
+            height: "100%", 
+            flexWrap: "wrap",
+            justifyContent: "space-evenly" 
+          }
+        }
+        }
+        
       },
       SvgIconPropsColorOverrides:  {
         color: "taxi"

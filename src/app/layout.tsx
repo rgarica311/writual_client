@@ -31,7 +31,7 @@ export default function RootLayout({
           <QueryClientProvider client={client}>
               <ThemeProvider theme={appliedTheme}>
                  <NavBar/>
-                  <Container maxWidth={false} disableGutters sx={{ resize:"vertical", margin:"0px", width: "100%"}}>
+                  <Container maxWidth={false} disableGutters sx={{ display: "flex", flexDirection: "column", height: "calc(100vh - 48px)", resize:"vertical", margin:"0px", width: "100%"}}>
                       {children}
                   </Container>
                

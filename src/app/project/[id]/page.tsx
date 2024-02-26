@@ -2,103 +2,55 @@
 
 import { Accordion, AccordionDetails, AccordionSummary, Box, Breadcrumbs, Button, Checkbox, Container, Divider, IconButton, Link, MenuItem, MenuList, Paper, Tab, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, TableSortLabel, Tabs, TextField, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
-import { request, gql } from "graphql-request";
+import { request } from "graphql-request";
 import { useQuery } from "@tanstack/react-query";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import  { CharacterCard } from '../../../components/CharacterCard'
-import { SceneCard } from '@/components/SceneCard';
+import { StepTabs } from '@/components/StepTabs';
 import { projectStyles } from 'styles';
-import { TabPanelProps } from 'interfaces';
+import { Version, Scene} from '../../../interfaces'
+import { CustomTabPanel } from '@/shared/CustomTabPanel';
+import { PROJECT_QUERY } from '@/queries/ProjectQueries';
+import { sceneStore } from '@/state/sceneState';
+import { useDebounce } from 'hooks';
+import { CREATE_SCENE, UPDATE_SCENE } from "@/queries/SceneQueries"
+import { Mutation } from "@/interfaces/scene"
+import { useCreateMutation } from 'hooks';
+import { createMutation } from '@/helpers/createMutation';
+import { GqlStatements } from '@/enums/GqlStatements';
+
 const endpoint = `http://localhost:4000`
 
-
-const CustomTabPanel = (props: TabPanelProps) => {
-    const { children, value, index, ...other } = props;
-
-    return (
-      <div
-        role="tabpanel"
-        hidden={value !== index}
-        id={`simple-tabpanel-${index}`}
-        aria-labelledby={`simple-tab-${index}`}
-        {...other}
-      >
-        {value === index && (
-          <Box sx={{ p: 0, height: "100%" }}>
-            {children}
-          </Box>
-        )}
-      </div>
-    );
-  }
-
 export default function Project({ params }) {
+    const setEditMode = sceneStore((state) => state.setEditMode)
+    const activeStep = sceneStore((state) => state.activeStep)
+    const setActiveStep = sceneStore((state) => state.setActiveStep)
+    const setActiveScene = sceneStore((state) => state.setActiveScene)
+    const activeVersion = sceneStore(state => state.activeVersion)
+    const setActiveVersion = sceneStore((state) => state.setActiveVersion)
+    const setNewVersion = sceneStore((state) => state.setNewVersion)
+    const setHandleSave = sceneStore((state) => state.setHandleSave)
+    const createStatement = sceneStore((state) => state.createStatement)
+    const setCreateStatement = sceneStore((state) => state.setCreateStatement)
+
+    const versionOptions = sceneStore((state) => state.versionOptions)
+    const setVersionOptions = sceneStore((state) => state.setVersionOptions)
+
+    const sceneContent = sceneStore((state) => state.sceneContent)
+    const setSceneContent = sceneStore((state) => state.setSceneContent)
+
+    const [ createVariables, setCreateVariables ] = useState<any>()
     const [expandedTop, setExpandedTop] = useState(true)
     const [expandedBottom, setExpandedBottom] = useState(true)
     const [characters, setCharacters] = useState([])
-    const [scenes, setScenes] = useState<Array<any>>([])
+    const [scenes, setScenes] = useState<Array<Scene>>([])
     const [value, setValue] = useState(0);
     const [bottomValue, setBottomValue] = useState(0);
     const [title, setTitle] = useState("")
     const [act, setAct] = useState<number>(0)
-    const [activeVersion, setActiveVersion] = useState(1)
-
-    const handleBottomChange = (event: React.SyntheticEvent, newValue: number) => {
-        event.stopPropagation()
-        setBottomValue(newValue);
-    };
-
-    const handleActChange = (event: React.SyntheticEvent, newValue: number) => {
-        event.stopPropagation()
-        setAct(newValue);
-    };
-
-    const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-        event.stopPropagation()
-        setValue(newValue);
-    };
-    console.log('Project params: ', params.id)
 
     const id = params.id
-    const PROJECT_QUERY = gql`
-            query GetProjectData($input: ProjectFilters) {
-                getProjectData(input: $input) {
-                    id
-                    title
-                    genre
-                    type
-                    user
-                    characters {
-                        details {
-                        age
-                        bio
-                        gender
-                        need
-                        version
-                        want
-                    }
-                    name
-                    }
-                    scenes {
-                        number
-                        versions {
-                            act
-                            antithesis
-                            step
-                            summary
-                            synthesis
-                            thesis
-                            version
-                        }
-                    }
-                    outline {
-                    format {
-                        name
-                    }
-                    }
-                }
-            }
-        `;
+    
 
     const variables = {
         input: {
@@ -111,18 +63,108 @@ export default function Project({ params }) {
     const { data, isLoading, error }: any = useQuery({queryKey: ['projects'], queryFn: async () => request(endpoint, PROJECT_QUERY, variables)});
 
     useEffect(() => {
-        console.log('data isLoading: ', isLoading)
+        console.log('debug scene project data isLoading: ', isLoading)
+        console.log('debug scene project data: ',  data)
         if(!isLoading) {
             if(data.getProjectData.length > 0) {
                 console.log('data: ', data.getProjectData)
                 let projectData = data.getProjectData[0]
                 setCharacters(projectData.characters)
+                setActiveStep(projectData.scenes[0]?.versions[0].step)
                 setScenes(projectData.scenes)
                 setTitle(projectData.title)
             }
         }
        
-    }, [isLoading])
+    }, [isLoading, data])
+
+    const updateMutationArgs: Mutation = {
+        createStatement: UPDATE_SCENE,
+        createVariables: createVariables, 
+        invalidateQueriesArray: ['projects'],
+        stateResetters: {
+            setCreateStatement,
+            setCreateVariables,
+            setVersionOptions,
+            setNewVersion
+        }
+    }
+
+    console.log('debug scene updateMutationArgs: ', updateMutationArgs)
+
+    const createMutationArgs: Mutation = {
+        createStatement: CREATE_SCENE,
+        createVariables: createVariables, 
+        invalidateQueriesArray: ['projects'],
+        stateResetters: {
+            setCreateStatement,
+            setCreateVariables
+        }
+    }
+
+    const createSceneMutation = createMutation(createMutationArgs)
+    useCreateMutation(createStatement, sceneContent, createSceneMutation, GqlStatements.CREATE_SCENE)
+
+    const updateSceneMutation = createMutation(updateMutationArgs)
+    useCreateMutation(createStatement, sceneContent, updateSceneMutation, GqlStatements.UPDATE_SCENE)
+
+    const handleSave = useDebounce((
+            newVersion: boolean,
+            newScene: boolean,
+            projectId: string,
+            number: number,
+            newVersionDisplay: number,
+            step: string) => {
+        console.log('debug scene update handleSave running')
+        if(newScene) {
+            console.log('debug scene new scene')
+            setCreateStatement(CREATE_SCENE)
+            setCreateVariables({act, projectId, newVersion, number, activeVersion, versions: [{
+                act,
+                thesis: sceneContent.thesis,
+                step,
+            }]})
+        } else {
+            //set newVersion correctly
+            console.log('debug scene update scene thesis: ', sceneContent.thesis)
+            setCreateStatement(UPDATE_SCENE)
+            console.log('debug scene create variables: ', {act, projectId, number, versions: [{
+                ...sceneContent,
+                newVersion,
+                version: newVersion ? newVersionDisplay + 1 : sceneContent.version,
+                thesis: sceneContent.thesis
+            }]})
+            setCreateVariables({act, projectId, number, versions: [{
+                ...sceneContent,
+                newVersion,
+                version: newVersion ? newVersionDisplay + 1  : sceneContent.version,
+                thesis: sceneContent.thesis
+            }]})
+        }
+    })
+
+    setHandleSave(handleSave)
+
+    const handleBottomChange = (event: React.SyntheticEvent, newValue: number) => {
+        event.stopPropagation()
+        setBottomValue(newValue);
+    };
+
+    const handleActChange = (event: React.SyntheticEvent, newValue: number) => {
+        console.log('newValue: ', newValue)
+        event.stopPropagation()
+        setAct(newValue);
+    };
+
+    const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+        event.stopPropagation()
+        setValue(newValue);
+    };
+    //console.log('Project params: ', params.id)
+
+    
+
+    
 
     const toggleAccordionTop = () => {
         setExpandedTop(!expandedTop)
@@ -147,34 +189,80 @@ export default function Project({ params }) {
     }
 
     const handleAddScene = (act: number) => {
-        console.log(`handleAddScene ran act ${act} scenes: `, scenes)
-        //const scenesArray: any = scenes
-        const newScene = {
+        console.log(`handleAddScene ran act ${act} step ${activeStep} scenes: `, scenes)
+        setActiveScene(scenes.length + 1)
+        //setNewVersion(true)
+
+        const newVersion: Scene = {
+            act,
+            newScene: true,
             number: scenes.length + 1,
+            activeVersion: 1,
+            projectId: id,
             versions: [{
                 act,
                 antithesis: "",
-                step: "",
-                summary: "",
+                synopsis: "",
                 synthesis: "",
                 thesis: "",
-                version: ""
+                version: 1,
+                sceneHeading: "",
+                step: activeStep
             }]
-            
         }
-        //scenesArray.push(newScene)
-        //console.log('handleAddScene currentScenes: ', newScene)
-        //console.log('handleAddScene scenesArray.: ', scenesArray)
 
-        setScenes([...scenes, newScene])
+        setScenes([...scenes, newVersion])
     }
-
-    useEffect(() => {
-        console.log('scenes updated: ', scenes)
-}   , [scenes])
 
     const handleAddCharacter = () => {
 
+    } 
+
+    const outline = {
+        name: "Hero's Journey",
+        acts: [ 
+            {
+                
+                label: "Act 1",
+                steps: [
+                    {
+                        stepName: "Ordinary World",
+                        stepDetails: "The start",
+                        stepAct: 1
+                    },
+                    {
+                        stepName: "Call To Adventure",
+                        stepDetails: "The start",
+                        stepAct: 1
+                    },
+                    {
+                        stepName: "Refusal",
+                        stepDetails: "The start",
+                        stepAct: 1
+                    },
+                    {
+                        stepName: "Meeting the Mentor",
+                        stepDetails: "The start",
+                        stepAct: 1
+                    },
+                    {
+                        stepName: "Threshold",
+                        stepDetails: "The start",
+                        stepAct: 1
+                    }
+                ]
+                
+            },
+            {
+                label: "Act 2",
+                steps: [
+
+                ]
+            }
+
+            
+        ],
+        
     }
 
     return (
@@ -231,59 +319,64 @@ export default function Project({ params }) {
 
             </Accordion>
 
-            <Accordion disableGutters={true} expanded={expandedBottom} onChange={() => toggleAccordionBottom()} >
-                <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{display: "flex", alignItems: "center", minWidth: "100%"}}>
-                    <Tabs value={bottomValue} onChange={handleBottomChange} aria-label="basic tabs example">
-                        <Tab label="Treatment" {...a11yProps(0)} />
-                        <Tab label="Scenes" {...a11yProps(1)} />
-                        <Tab label="Srceenplay" {...a11yProps(2)} />
+            <Accordion sx={{order: "1px solid blue"}} disableGutters={true} expanded={expandedBottom} onChange={() => toggleAccordionBottom()} >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{display: "flex", alignItems: "center", minWidth: "100%", "&.MuiAccordionSummary-content": {padding: 0}}}>
+                    <Tabs sx={projectStyles.tabs}  value={bottomValue} onChange={handleBottomChange} aria-label="basic tabs example">
+                        <Tab  label="Treatment" {...a11yProps(0)} />
+                        <Tab  label="Scenes" {...a11yProps(1)} />
+                        <Tab  label="Srceenplay" {...a11yProps(2)} />
                     </Tabs>
                         
                 </AccordionSummary>
-                <AccordionDetails sx={{ padding: "13px", minWidth: "100%", height: "100%"}}>
+                <AccordionDetails sx={{ padding: "13px", minWidth: "100%", height: "calc(100vh - 349px)"}}>
                     <CustomTabPanel value={bottomValue} index={0}>
                         <Container disableGutters sx={{margin: 0, padding: 1}}>Treatment</Container>
                     </CustomTabPanel>
                     
                     <CustomTabPanel value={bottomValue} index={1}>
-                        <Tabs value={act} onChange={handleActChange} aria-labl="act tabs">
-                            <Tab label="Act 1" {...actTabProps(0)}/>
-                            <Tab label="Act 2" {...actTabProps(1)}/>
-                            <Tab label="Act 3" {...actTabProps(2)}/>
+
+                        <Tabs variant="fullWidth" sx={projectStyles.tabs} value={act} onChange={handleActChange} aria-label="act tabs">
+                            {
+                                outline.acts.map((act: any,  index: number) =>  <Tab label={act.label} {...actTabProps(index)}/>)
+
+                            }
+                         
                         </Tabs>
-                        <CustomTabPanel value={act} index={0}>
-                            <Container disableGutters sx={projectStyles.sceneContainer}>
-                                {
-                                    scenes.length > 0 
-                                        ? scenes.map((scene: any) => {
-                                            console.log('scene: ', scene)
-                                            return <SceneCard number={scene.number} versions={scene.versions}/>
-                                        })
-                                        : <Button variant='contained'>Add Scene</Button>
-                                    
+
+                        {
+                            outline.acts.map((actObj: any, index: number) => {          
+                                    //console.log('actObj: ',  actObj)
+                                    return <CustomTabPanel value={act} index={index}>
+                                        <StepTabs handleAddScene={() => handleAddScene(index+=1)} steps={actObj.steps} scenes={scenes}/>
+                                        {
+                                            scenes.length > 0 && (
+                                                <Button onClick={() => handleAddScene(index+=1)} sx={{marginLeft: "91%", width: "150px", height: "36px"}} variant='contained'>Add Scene</Button>
+                                            )
+                                        }
+                                    </CustomTabPanel>
                                 }
-                            </Container>
-                            <Button onClick={() => handleAddScene(1)} sx={{marginLeft: "91%", width: "150px", height: "36px"}} variant='contained'>Add Scene</Button>
+                            )
+                        }
+                       
+                        {/*Act 2 Panel*/}
+                        {/*<CustomTabPanel value={act} index={1}>
+                            <StepTabs scenes={scenes}/>
+                            {
+                                scenes.length > 0 && (
+                                    <Button onClick={() => handleAddScene(2)} sx={{marginLeft: "91%", width: "150px", height: "36px"}} variant='contained'>Add Scene</Button>
+                                )
+                            }                        
                         </CustomTabPanel>
-
-                        <CustomTabPanel value={act} index={1}>
-                            <Container disableGutters sx={projectStyles.sceneContainer}>
-                              <Button onClick={() => handleAddScene(2)} variant='contained'>Add Scene</Button>
-                            </Container>
-                        </CustomTabPanel>
-
+                        
                         <CustomTabPanel value={act} index={2}>
-                            <Container disableGutters sx={projectStyles.sceneContainer}>
-                                {
-                                    scenes.length > 0 
-                                        ? scenes.map((scene: any) => {
-                                            return <SceneCard/>
-                                        })
-                                        : <Button variant='contained'>Add Scene</Button>
-                                    
-                                }
-                            </Container>
-                        </CustomTabPanel>
+                            <StepTabs scenes={scenes}/>
+                            {
+                                scenes.length > 0 && (
+                                    <Button onClick={() => handleAddScene(3)} sx={{marginLeft: "91%", width: "150px", height: "36px"}} variant='contained'>Add Scene</Button>
+                                )
+                            }                        
+                        </CustomTabPanel>*/}
+                            
                         
                     </CustomTabPanel>
 

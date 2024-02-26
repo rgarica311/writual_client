@@ -13,8 +13,29 @@ export const projectStyles = {
     sceneContainer: {
         margin:  0,
         minWidth: "100%",
+        minHeight: "100%",
         display: "flex",
-        justifyContent: "space-evenly",
+        //sjustifyContent: "space-between",
         flexWrap:  "wrap",
+        padding: 0,
+    
+    },
+    tabs: { 
+        "&.MuiTabs-flexContainerVertical": {
+            minHeight: "30px",
+            display: "flex", 
+            flexDirection:"row", 
+            flexWrap: "wrap",
+            justifyContent: "space-evenly" 
+        },
+       
+    },
+
+    tab: {
+        maxHeight: "30px",
+        padding: 0,
+        "&.MuiTab-root": {
+            minHeight: "30px"
+        }
     }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import {
   
     TableHead,
@@ -23,39 +23,9 @@ import {
 import { visuallyHidden } from '@mui/utils';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import FilterListIcon from '@mui/icons-material/FilterList';
-
-type Order = 'asc' | 'desc'; 
-
-
-
-interface EnhancedTableProps {
-    headerCells: any;
-    numSelected: number;
-    onRequestSort: (event: React.MouseEvent<unknown>, property: any) => void;
-    //onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    order: Order;
-    orderBy: string;
-    rowCount: number;
-    label: string;
-    handleInternalSelectAll: any
-    columnState: any
-    handleOpenFilter: any
-    handleCloseFilter: any
-    filterId: any
-    openFilter: any
-    filterAnchorEl: any
-    columnStateUpdate: any
-    showAll: any
-    handleHideAll: any
-    handleShowAll: any
-    handleReset: any
-    hoverLabel: any
-    setHoverLabel: any
-}
-
-
+import { EnhancedTableProps } from '@props/tableProps'
+import { useUserStore } from '@/state/userGeneration'
 
 export const CustomTableHead: React.FC<EnhancedTableProps> = (props: EnhancedTableProps) => {
     const { 
@@ -67,19 +37,29 @@ export const CustomTableHead: React.FC<EnhancedTableProps> = (props: EnhancedTab
       headerCells, 
       label, 
       handleInternalSelectAll,
-      columnState, 
       handleOpenFilter, 
       handleCloseFilter, 
       filterId,
       openFilter,
       filterAnchorEl,
-      columnStateUpdate,
       showAll,
-      handleHideAll,
-      handleShowAll,
-      handleReset,
+   
       hoverLabel, 
       setHoverLabel } = props;
+
+    const columnVisibility = useUserStore((state) => state.columnVisibility)
+    const setColumnVisibility = useUserStore((state) => state.setColumnVisibility)
+    
+    const filterStatus = useUserStore((state) => state.filterStatus)
+
+    headerCells.forEach((cell: any) => {
+      columnVisibility[cell.dataIndex] = true
+    })
+
+    console.log('columnVisibility: ', columnVisibility)
+
+    setColumnVisibility(columnVisibility)
+
     const createSortHandler =
       (property: any) => (event: any) => {
         console.log(`test e createSortHandler propert ${property} e }`, event.target.checked)
@@ -113,14 +93,27 @@ export const CustomTableHead: React.FC<EnhancedTableProps> = (props: EnhancedTab
       createSortHandler(cell)
     }
 
+    const handleFilterChange = () => {
+
+    }
+
+    const handleHideAll = () => {
+
+    }
+    const handleShowAll = () => {
+      
+    }
+    const handleReset = () => {
+      
+    }
+
     const tableSortLabelStyle = {  width: "100%", fontSize: '0.875rem', pl: '1rem', '&.MuiTableSortLabel-root': { display: "flex", justifyContent: "space-between", paddingLeft: 0} }
   
-    console.log('TableHeader columnState:  ', columnState)
     return (
       <TableHead>
         <TableRow>
           {headerCells.map((cell: any) => (
-            columnState?.columnVisibility[cell.dataIndex] && (
+            columnVisibility[cell.dataIndex] && (
                 <TableCell
                     sx={ cell.dataIndex === 'actions' ? {width: '3%'} : tableHeadCellStyle  }
                     key={cell.id}
@@ -161,16 +154,16 @@ export const CustomTableHead: React.FC<EnhancedTableProps> = (props: EnhancedTab
                                               <Divider/>
                                                                                                       
                                               {
-                                                  Object.keys(columnState.filterStatus).map((status: any) => {
+                                                  Object.keys(filterStatus).map((status: any) => {
                                                       console.log('status: ', status)
                                                       return (
-                                                          <MenuItem key={columnState.filterStatus[status].label}>
+                                                          <MenuItem key={filterStatus[status].label}>
                                                           <FormControlLabel 
                                                               control={<Checkbox
-                                                                  checked={columnState.filterStatus[status].selected}
-                                                                  onChange={() => columnStateUpdate?.(status)}
+                                                                  checked={filterStatus[status].selected}
+                                                                  onChange={handleFilterChange}
                                                                   defaultChecked/>}
-                                                              label={columnState.filterStatus[status].label}/>
+                                                              label={filterStatus[status].label}/>
                                                           </MenuItem>
                                                       )
                                                   })
@@ -181,12 +174,12 @@ export const CustomTableHead: React.FC<EnhancedTableProps> = (props: EnhancedTab
                                                   <Container disableGutters sx={{width: "100%", justifyContent: "space-between", display: "flex"}}>
                                                       {
                                                           showAll
-                                                              ?  <Button onClick={()  => handleHideAll?.()} variant='text'>HIDE ALL</Button>
+                                                              ?  <Button onClick={handleHideAll} variant='text'>HIDE ALL</Button>
 
-                                                              :  <Button onClick={()  => handleShowAll?.()} variant='text'>SHOW ALL</Button>
+                                                              :  <Button onClick={handleShowAll} variant='text'>SHOW ALL</Button>
                                                       }
 
-                                                      <Button onClick={()  => handleReset?.()} variant='text'>RESET</Button>
+                                                      <Button onClick={handleReset} variant='text'>RESET</Button>
                                                       
                                                   </Container>
                                               </MenuItem>

@@ -1,8 +1,4 @@
-export enum ProjectType {
-    Feature,
-    Short,
-    Television,
-}
+import { ProjectType } from "../enums";
 
 export interface Project {
     id: { type: String },
@@ -26,4 +22,7 @@ export interface TabPanelProps {
     value: number;
 }
 
-export type Projects = Project[] | []
+export interface CreateProjectProps {
+    setAddProject: Function
+    handleAddProject: Function
+}

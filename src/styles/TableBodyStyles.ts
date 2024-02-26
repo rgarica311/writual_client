@@ -16,11 +16,25 @@ export const tableBodyStyle = {
             border: 0 
         }
     },
+    paper: {
+        boxShadow: "none", 
+        padding: 1, 
+        maxHeight: "calc(100% - 40px)", 
+        display: "flex", 
+        flexDirection: "column", 
+        width: '100%'
+    },
     container: { 
         minHeight: "70px", 
         maxWidth: "100%", 
         display: "flex", 
         alignItems: "center" 
+    },
+    topContainer: {
+        display: "flex", 
+        flexDirection: "row", 
+        alignItems: "center", 
+        margin: 0
     },
     genreChip: {
         borderRadius: 5, 
@@ -63,6 +77,20 @@ export const tableBodyStyle = {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
+    },
+    tableTopButtons: {
+        display: "flex",
+        flexDirection: "row",
+        height: "100%",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: 1,
+        marginBottom: "2px"
+    },
+    tableFooter: {
+        backgroundColor:"white", 
+        display: "flex", 
+        justifyContent: "flex-end"
     }
 
 }

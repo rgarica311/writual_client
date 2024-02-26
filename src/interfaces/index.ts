@@ -1,3 +1,4 @@
 export * from './projectTableHeader'
-export * from './tableProps'
+export * from './props/tableProps'
 export * from './project'
+export * from './scene'

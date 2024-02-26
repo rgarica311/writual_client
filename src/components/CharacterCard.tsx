@@ -39,16 +39,6 @@ export const CharacterCard: React.FC<any> = ({name, details, id}) => {
   const [expanded, setExpanded] = React.useState(false);
   const [version, setVersion] = React.useState(1)
   const [ currentId,  setCurrentId ] =  React.useState<number  | undefined>()
-  const [value, setValue] = React.useState(0);
-  const [open, setOpen] = React.useState(false);
-  const theme = useTheme();
-
-  function a11yProps(index: number) {
-    return {
-      id: `simple-tab-${index}`,
-      'aria-controls': `simple-tabpanel-${index}`,
-    };
-  }
 
   useEffect(() => {
     if(!expanded)  {
@@ -57,18 +47,8 @@ export const CharacterCard: React.FC<any> = ({name, details, id}) => {
   }, [expanded])
 
   const handleExpandClick = () => {
-    
-    
       setExpanded(!expanded);
-    
   }
-
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    event.stopPropagation()
-    setValue(newValue);
-};
-
- 
 
   const detail = details.find((detail: any) => detail.version === version)
   console.log('detail: ', detail)
@@ -77,10 +57,6 @@ export const CharacterCard: React.FC<any> = ({name, details, id}) => {
   React.useEffect(() => {
     console.log(`${currentId} === ${id}: ${currentId === id}`)
   }, [currentId])
-
-  
-
-  
 
   return (
   
@@ -120,14 +96,9 @@ export const CharacterCard: React.FC<any> = ({name, details, id}) => {
               <Collapse in={expanded} timeout="auto" unmountOnExit>
                 <Typography paragraph>Character Details:</Typography>
                 <Box sx={{ maxWidth: "300px"}}>
-                <Typography paragraph>{detail.bio}</Typography>
-                <Typography>Want: {detail.want}</Typography>
-                <Typography>Need: {detail.need}</Typography>
-                
-
-                          
-                          
-                      
+                  <Typography paragraph>{detail.bio}</Typography>
+                  <Typography>Want: {detail.want}</Typography>
+                  <Typography>Need: {detail.need}</Typography>
                 </Box>
             </Collapse>
             </CardContent>

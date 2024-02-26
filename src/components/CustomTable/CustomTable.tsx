@@ -14,37 +14,18 @@ import {
 import { useTheme } from '@mui/material/styles';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useRouter } from 'next/navigation'
-import { gql, GraphQLClient } from "graphql-request";
 import { CustomTableHead, CustomTableBody } from './';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { TableProps, Data } from 'interfaces';
 import { tableBodyStyle } from 'styles';
 import InboxIcon from '@mui/icons-material/Inbox';
-import { Inbox } from '@mui/icons-material';
-
-type Order = 'asc' | 'desc';
-
-const projectReducer = (state, action) => {
-    if(action.type === "UPDATE_TITLE")  {
-        return {
-            ...state, 
-            title: action.value
-        }
-    }
-}
-
-const endpoint = `http://localhost:4000`
+import { Order } from '@/types/types'
 
 export const CustomTable: React.FC<TableProps> = ({ 
     label, 
     headerCells, 
     rows, 
     defaultSortColumn, 
-    handleHideAll,
-    handleShowAll,
-    handleReset,
-    columnStateUpdate,
-    columnState,
     setAddProject,
      }) => {
     const theme = useTheme()
@@ -59,45 +40,12 @@ export const CustomTable: React.FC<TableProps> = ({
     const [openSort, setOpenSort] = React.useState(false)
     const [manageColumns, setOpenManageColumns] = React.useState(false)
     const [currentCell, setCurrentCell] = React.useState("")
-    const [disablePrint, setDisablePrint] = React.useState(true)
-    const [ currentRow, setCurrentRow ] = React.useState()
-    const [searchValue, setSearchValue] = React.useState<string[]>([]);
-    const searchCategories = headerCells.map((cell: any) => {return cell.label})
     const [edit, setEditProject]  =  React.useState(false)
     const [currentProject, setCurrentProject] = React.useState("") 
-    const [state, dispatch] = useReducer(projectReducer, rows)
-    const [project, setProject] = React.useState<any>({})
     const [hoverLabel, setHoverLabel] = React.useState("")
     const [mcAnchorEl, setMCAnchorEl] = React.useState(null);
     const [filterAnchorEl, setFilterAnchorEl] = React.useState(null)
     const [showAll, setShowAll] = useState(true)
-
-    const PROJECT_TITLE_MUTAION = gql`
-    {
-        mutation UpdateProject(project: any) {
-            updateProject(project: {input: $project})
-            id
-            title
-        }
-    }`;
-
-const graphQLClient = new GraphQLClient(endpoint, {
-   
-  })
-
-    /*useEffect(()  => {
-        const variables = {
-            project
-        }
-
-        const updateProject = async ()  => {
-            const data = await graphQLClient.request(PROJECT_TITLE_MUTAION, variables);
-            console.log('update data: ', data)
-        }
-
-        updateProject()
-
-    }, [project])*/
 
     const router = useRouter()
 
@@ -107,17 +55,6 @@ const graphQLClient = new GraphQLClient(endpoint, {
     const manageColumnsId = openManageColumns ? 'manage-columns-popover' : undefined;
     const openFilter = Boolean(filterAnchorEl);
     const filterId = openFilter ? 'filter-status-popover' : undefined;
-
-    const tableTopButtons = {
-        display: "flex",
-        flexDirection: "row",
-        height: "100%",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: 1,
-        backgroundColor: theme.palette.body.main,
-        marginBottom: "2px"
-    }
 
     const descendingComparator = (a: any, b: any, orderBy: any) => {
         if (b[orderBy] < a[orderBy]) {
@@ -145,21 +82,17 @@ const graphQLClient = new GraphQLClient(endpoint, {
           }
           return a[1] - b[1];
         });
-        //console.log('edit stabilizedThis?.map((el: any) => el[0]): ', stabilizedThis?.map((el: any) => el[0]))
         return stabilizedThis?.map((el: any) => el[0]);
       }
 
     const visibleRows: any = React.useMemo(() => 
-        //console.log('edit visibleRows rows: ', rows)
         stableSort(rows, getComparator(order, orderBy)).slice(
             currentPage * currentPageSize,
             currentPage * currentPageSize + currentPageSize,
         )
     ,
-    [state, order, orderBy, currentPage, currentPageSize, rows],
+    [order, orderBy, currentPage, currentPageSize, rows],
     );
-
-    //console.log('edit visible rows: ', visibleRows)
 
     const handleChangePage = (event: unknown, newPage: number) => {
         console.log('debug currentPage handlePage change setting newPage to: ', newPage)
@@ -193,16 +126,6 @@ const graphQLClient = new GraphQLClient(endpoint, {
         setOpenManageColumns(true)
     }
 
-    const handleResponseType = (type:string) => {
-        switch(type.toLowerCase()){
-          case 'y':
-            return 'Hit';
-          case 'n':
-            return 'No hit';
-          case 'errt':
-            return 'ERRT-Error';
-        }
-      }
     const handleRecordClick  = (e: any, id: string) => {
         console.log(`handleRecordClick e: ${e} id: ${id}`)
         e.preventDefault()
@@ -227,26 +150,6 @@ const graphQLClient = new GraphQLClient(endpoint, {
         handleRequestSort(event, property);
     };
 
-    const handleSearchValue = (e: any) => {
-        console.log(`custom table ${label} handleSearchValue: `, e.target.value)
-        //setValue(e.target.value)
-    }
-
-    const handleUpdateProject = (e, project)  =>  {
-        console.log('handleUpdateProject: ', project)
-        e.preventDefault()
-        e.stopPropagation()
-        console.log('update project: ', project)
-        setProject(project)
-    };
-
-    const handleEditProject =  (e: any, id: string) =>  {
-        console.log('handleEditProject id: ', id)
-        setEditProject(true)
-        //handleCloseActions(e)
-        setCurrentProject(currentProject)
-    }
-
     const handleOpenFilter = (e: any) => {
         e.stopPropagation()
         setFilterAnchorEl(e.currentTarget)
@@ -257,21 +160,19 @@ const graphQLClient = new GraphQLClient(endpoint, {
         setFilterAnchorEl(null)
     }
 
-    //console.log('debug theme: ', mode)
-    //console.log(`debug edit visibleRows ${JSON.stringify(visibleRows, null, 2)}`)
     return (
-        <Paper elevation={0} sx={{ backgroundColor: theme.palette.body.main, boxShadow: "none", padding: 1, maxHeight: "calc(100% - 40px)", display: "flex", flexDirection: "column", width: '100%'}}>
-    
-            <Container disableGutters maxWidth={false} sx={tableTopButtons}>
-                <Container disableGutters sx={{display: "flex", flexDirection: "row", alignItems: "center", margin: 0}}>
-                <Typography variant="h6">PROJECTS</Typography>
-                <Button onClick={() => setAddProject(true)} 
-                            color="primary" 
-                            variant='text' 
-                            sx={tableBodyStyle.buttonStyle} 
-                            startIcon={<AddCircleOutlineIcon />}>
-                            Create Project
-                        </Button>
+        <Paper elevation={0} sx={{ ...tableBodyStyle.paper, backgroundColor: theme.palette.body.main }}>
+            <Container disableGutters maxWidth={false} sx={{...tableBodyStyle.tableTopButtons, backgroundColor: theme.palette.body.main}}>
+                <Container disableGutters sx={tableBodyStyle.topContainer}>
+                    <Typography variant="h6">PROJECTS</Typography>
+                    <Button 
+                        onClick={() => setAddProject(true)} 
+                        color="primary" 
+                        variant='text' 
+                        sx={tableBodyStyle.buttonStyle} 
+                        startIcon={<AddCircleOutlineIcon />}>
+                        Create Project
+                    </Button>
                 </Container>
                 
                 <Container disableGutters maxWidth={false}  sx={{width: "max-content", margin: 0}}>
@@ -294,12 +195,8 @@ const graphQLClient = new GraphQLClient(endpoint, {
                         filterId={filterId}
                         openFilter={openFilter}
                         filterAnchorEl={filterAnchorEl}
-                        columnStateUpdate={columnStateUpdate}
                         showAll={showAll}
-                        handleHideAll={handleHideAll}
-                        handleShowAll={handleShowAll}
-                        handleReset={handleReset}
-                        columnState={columnState}
+                    
                         label={label}
                         headerCells={headerCells}
                         numSelected={selected.length}
@@ -316,9 +213,7 @@ const graphQLClient = new GraphQLClient(endpoint, {
                                 headerCells={headerCells}
                                 edit={edit}
                                 currentProject={currentProject}
-                                project={project}
                                 isSelected={isSelected}
-                                handleUpdateProject={handleUpdateProject}
                                 handleRecordClick={handleRecordClick}
                                 setCurrentProject={setCurrentProject}
                                 //handleEditProject={handleEditProject}
@@ -327,11 +222,6 @@ const graphQLClient = new GraphQLClient(endpoint, {
                             />
                            
                     }
-                    
-
-                    
-                        
-
                     
                     </Table>
                     {
@@ -344,7 +234,7 @@ const graphQLClient = new GraphQLClient(endpoint, {
                         
                     }
             </TableContainer>
-                    <TableFooter sx={{backgroundColor:"white", display: "flex", justifyContent: "flex-end"}}>
+                    <TableFooter sx={tableBodyStyle.tableFooter}>
                             <TablePagination
                                                 sx={{minHeight: "60px"}}
 
